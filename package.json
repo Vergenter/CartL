@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "cart puzzle",
   "main": "index.js",
+  "private": true,
   "scripts": {
     "test": "test",
     "watch": "webpack --watch",
