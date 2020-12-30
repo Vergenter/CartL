@@ -42,7 +42,7 @@ If you need to update `npm`, you can make it using `npm`! Cool right? After runn
 
 ## Run app
 
-    $ npm build
+    $ npm run build
     $ npm serve
-    
+
 Then open url where you are serving the app.

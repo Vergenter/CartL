@@ -7,5 +7,4 @@ export interface Tile {
     length:number;
     color:number;
     needBackground:boolean;
-
 }
