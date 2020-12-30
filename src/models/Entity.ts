@@ -11,5 +11,5 @@ export interface Entity{
     currTile:[number,number]
     currDistance:number;
     nextTile:[number,number]
-    color:number
+    color:number,
 }

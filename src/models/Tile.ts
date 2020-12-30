@@ -6,4 +6,6 @@ export interface Tile {
     direction:number;
     length:number;
     color:number;
+    needBackground:boolean;
+
 }

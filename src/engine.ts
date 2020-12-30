@@ -5,8 +5,9 @@ import { Tile } from "./models/Tile";
 import {Eq,eqNumber} from 'fp-ts/lib/Eq'
 import { Sprite } from "pixi.js";
 import { TileForm } from "./models/TileForm";
-import {isNone, Option,map, none,some} from 'fp-ts/lib/Option'
+import {isNone, Option,map, none,some,isSome, chain} from 'fp-ts/lib/Option'
 import { getInTilePosition } from "./levelDrawer";
+import { pipe } from "fp-ts/lib/function";
 const numberClamp = clamp(ordNumber); 
 function acceleration(velocity:number,delta:number){
     return velocity + Math.cos(numberClamp(0,Math.PI/2)(velocity/8))*delta/6
@@ -161,17 +162,14 @@ const updateTile=(tiles:Tile[][])=>(oldTile:[number,number])=>(currTile:[number,
         tiles[currTile[0]][currTile[1]].direction=(tiles[currTile[0]][currTile[1]].direction+1)%4
     }
 }
-/*
-good caclucalte moves
->tiles
->inputs for main cart
->entities
->delta
-->new entities state
-->new tiles state
-->option<result:boolean>
-*/
-export const calculateMove = (tiles:Tile[][])=>(buttons:ButtonsState)=>(entity:Entity,delta:number)=>{
+const emptyButtons = {
+    down:false,
+    left:false,
+    up:false,
+    right:false,
+    space:false
+};
+export const calculateMove = (tiles:Tile[][])=>(endGame:Entity)=>(selection:boolean)=>(buttons:ButtonsState)=>(entity:Entity,delta:number)=>{
     let path = entity.velocity*delta +entity.currDistance;
     while(path>0){
         const currTile = tiles[entity.currTile[0]][entity.currTile[1]];
@@ -181,28 +179,32 @@ export const calculateMove = (tiles:Tile[][])=>(buttons:ButtonsState)=>(entity:E
             break;
         }
         path-=currTile.length;
-        const futureTile = getNextTile(buttons)(tiles)(entity.currTile)(entity.nextTile);
+        const futureTile = getNextTile(selection?buttons:emptyButtons)(tiles)(entity.currTile)(entity.nextTile);
         if(isNone(futureTile)){
             path=0;
             entity.currDistance=currTile.length;
             entity.velocity=0;
             break;
         }
-        const [x,y,rotation] = getInTilePosition(tiles)(getDirectionBetweenTiles(entity.oldTile,entity.currTile))(entity.currTile)(getDirectionBetweenTiles(entity.currTile,entity.nextTile))(currTile.length);
-        entity.x=x;
-        entity.y=y;
-        entity.rotation=rotation;
         if(isCurrTileSpecial(currTile.form)){
             updateTile(tiles)(entity.oldTile)(entity.currTile)(entity.nextTile);
         }
-        map<[number,number],void>((found)=>{
-            entity.oldTile=entity.currTile;
-            entity.currTile=entity.nextTile;
-            entity.nextTile=found;
-        })(futureTile)
+        const result = pipe(
+            (futureTile),
+            chain<[number,number],boolean>((found)=>{
+                entity.oldTile=entity.currTile;
+                entity.currTile=entity.nextTile;
+                entity.nextTile=found;
+                return (entity.currTile[0]===endGame.currTile[0]&&entity.currTile[1]===endGame.currTile[1])?some(true):none;
+            }),
+        )
+        if(isSome(result)){
+            return result;
+        } 
     }
     const [x,y,rotation] = getInTilePosition(tiles)(getDirectionBetweenTiles(entity.oldTile,entity.currTile))(entity.currTile)(getDirectionBetweenTiles(entity.currTile,entity.nextTile))(entity.currDistance);
     entity.x=x;
     entity.y=y;
     entity.rotation=rotation;
+    return none;
 }

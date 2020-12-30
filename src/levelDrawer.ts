@@ -1,12 +1,18 @@
 import { ITextureDictionary, Point, Sprite, Texture } from "pixi.js";
+import { backgroundColor } from "./colors";
 import { Entity } from "./models/Entity";
 import { EntityForm } from "./models/EntityForm";
 import { Tile } from "./models/Tile";
-import { TileForm } from "./models/TileForm";
+import { TileForm, walls } from "./models/TileForm";
 
-function getTileTexture(t:TileForm){
+function getTileTexture(t:TileForm,dir:number){
+    const wall = walls.indexOf(t);
+    if(wall>=0){
+        return ['bottomWall.png','bottomLeftWall.png','leftWall.png','topLeftWall.png','topWall.png','topRightWall.png','rightWall.png','bottomRightWall.png','outerBottomLeftWall.png','outerTopLeftWall.png','outerTopRightWall.png','outerBottomRightWall.png'][wall]
+    }
     switch(t){
-        case TileForm.empty: return "Empty.png";
+        case TileForm.empty: return "";
+        case TileForm.floor: return 'floor.png'
         case TileForm.crossroads: return "4way.png";
         case TileForm.path: return "path.png";
         case TileForm.turn: return "turn.png";
@@ -18,6 +24,14 @@ function getTileTexture(t:TileForm){
         case TileForm.specialThreeWayTurnOnly: return "special3wayTurnOnly.png";
         case TileForm.specialThreeWayForced: return "special3wayForcedThrough.png";
     }
+}
+
+export function getFloor(textures:ITextureDictionary,x:number,y:number){
+    const background = new Sprite(textures['floor.png'])
+    background.tint=backgroundColor
+    background.anchor.set(0.5,0.5);
+    background.position.set(x,y)
+    return background;
 }
 function getEntityTexture(e:EntityForm){
     switch(e){
@@ -38,8 +52,13 @@ function getSprite(texture:Texture,rotation:number,x:number,y:number,tint:number
     return result;
 }
 const textureSize=64;
+export function getTilePosition(rowIndex:number,index:number):{x:number,y:number}{
+    const x = index*textureSize;
+    const y = rowIndex*textureSize;
+    return {x,y}
+}
 export function getTilesSprites(tiles:Tile[][],textures:ITextureDictionary):Sprite[][]{
-    return tiles.map((row,i)=>row.map((tile,j)=> getSprite(textures[getTileTexture(tile.form)],toRotation(tile.direction),j*textureSize,i*textureSize,tile.color)))
+    return tiles.map((row,i)=>row.map((tile,j)=> getSprite(textures[getTileTexture(tile.form,tile.direction)],toRotation(tile.direction),j*textureSize,i*textureSize,tile.color)))
 }
 function getDirectionBetweenTiles(tile:[number,number],nextTile:[number,number]):number{
     if( tile[0]>nextTile[0]){
@@ -92,5 +111,5 @@ export const getInTilePosition=(tiles:Tile[][])=>(currTileToDirection:number)=>(
     return [newXY[0],newXY[1],toRotation(entityDirection)]
 }
 export function getMinecartPosition(entity:Entity):Point{
-    return new Point(entity.currTile[0]*textureSize,entity.currTile[0]*textureSize)
+    return new Point(entity.currTile[1]*textureSize,entity.currTile[0]*textureSize)
 }

@@ -1,5 +1,18 @@
 export enum TileForm{
     empty,
+    floor,
+    wallBottom,
+    wallBottomLeft,
+    wallLeft,
+    wallTopLeft,
+    wallTop,
+    wallTopRight,
+    wallRight,
+    wallBottomRight,
+    wallOuterBottomLeft,
+    wallOuterTopLeft,
+    wallOuterTopRight,
+    wallOuterBottomRight,
     crossroads,
     path,
     turn,
@@ -11,3 +24,4 @@ export enum TileForm{
     specialThreeWayTurnOnly,
     specialThreeWayForced,
 }
+export const walls = [TileForm.wallBottom,TileForm.wallBottomLeft,TileForm.wallLeft,TileForm.wallTopLeft,TileForm.wallTop,TileForm.wallTopRight,TileForm.wallRight,TileForm.wallBottomRight,TileForm.wallOuterBottomLeft,TileForm.wallOuterTopLeft,TileForm.wallOuterTopRight,TileForm.wallOuterBottomRight];
